@@ -1,93 +1,67 @@
 import Customer, { ICustomer } from "../models/customer.model";
-import { Request, Response } from "express";
 
 // Get all customers
-export const getCustomers = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const getCustomers = async (): Promise<ICustomer[]> => {
     try {
-        const customers = await Customer.find();
-        res.status(200).json(customers);
+        return await Customer.find();
     } catch (error) {
-        res.status(500).json({ message: "Error fetching customers", error });
+        throw new Error("Error fetching customers");
     }
 };
 
 // Get a customer by ID
 export const getCustomerById = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+    id: string
+): Promise<ICustomer | null> => {
     try {
-        const { id } = req.params;
-        const customer = await Customer.findById(id);
-        if (!customer) {
-            res.status(404).json({ message: "Customer not found" });
-            return;
-        }
-        res.status(200).json(customer);
+        return await Customer.findById(id);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching customer", error });
+        throw new Error("Error fetching customer");
     }
 };
 
 // Create a new customer
 export const createCustomer = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+    firstName: string,
+    lastName: string,
+    email: string
+): Promise<ICustomer> => {
     try {
-        const { firstName, lastName, email } = req.body;
         const newCustomer: ICustomer = new Customer({
             firstName,
             lastName,
             email,
         });
-        await newCustomer.save();
-        res.status(201).json(newCustomer);
+        return await newCustomer.save();
     } catch (error) {
-        res.status(500).json({ message: "Error creating customer", error });
+        throw new Error("Error creating customer");
     }
 };
 
 // Update a customer by ID
 export const updateCustomer = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+    id: string,
+    firstName: string,
+    lastName: string,
+    email: string
+): Promise<ICustomer | null> => {
     try {
-        const { id } = req.params;
-        const { firstName, lastName, email } = req.body;
-        const updatedCustomer = await Customer.findByIdAndUpdate(
+        return await Customer.findByIdAndUpdate(
             id,
             { firstName, lastName, email },
             { new: true }
         );
-        if (!updatedCustomer) {
-            res.status(404).json({ message: "Customer not found" });
-            return;
-        }
-        res.status(200).json(updatedCustomer);
     } catch (error) {
-        res.status(500).json({ message: "Error updating customer", error });
+        throw new Error("Error updating customer");
     }
 };
 
 // Delete a customer by ID
-export const deleteCustomer = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const deleteCustomer = async (id: string): Promise<boolean> => {
     try {
-        const { id } = req.params;
         const deletedCustomer = await Customer.findByIdAndDelete(id);
-        if (!deletedCustomer) {
-            res.status(404).json({ message: "Customer not found" });
-            return;
-        }
-        res.status(200).json({ message: "Customer deleted successfully" });
+        return !!deletedCustomer;
     } catch (error) {
-        res.status(500).json({ message: "Error deleting customer", error });
+        throw new Error("Error deleting customer");
     }
 };

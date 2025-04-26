@@ -1,89 +1,69 @@
 import Product, { IProduct } from "../models/product.model";
-import { Request, Response } from "express";
 
 // Get all products
-export const getProducts = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const getProducts = async (): Promise<IProduct[]> => {
     try {
-        const products = await Product.find();
-        res.status(200).json(products);
+        return await Product.find();
     } catch (error) {
-        res.status(500).json({ message: "Error fetching products", error });
+        throw new Error("Error fetching products");
     }
 };
 
 // Get a product by ID
-export const getProductById = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const getProductById = async (id: string): Promise<IProduct | null> => {
     try {
-        const { id } = req.params;
-        const product = await Product.findById(id);
-        if (!product) {
-            res.status(404).json({ message: "Product not found" });
-            return;
-        }
-        res.status(200).json(product);
+        return await Product.findById(id);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching product", error });
+        throw new Error("Error fetching product");
     }
 };
 
 // Create a new product
 export const createProduct = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+    productName: string,
+    productPrice: number
+): Promise<IProduct> => {
     try {
-        const { productName, productPrice } = req.body;
         const newProduct: IProduct = new Product({ productName, productPrice });
-        await newProduct.save();
-        res.status(201).json(newProduct);
+        return await newProduct.save();
     } catch (error) {
-        res.status(500).json({ message: "Error creating product", error });
+        throw new Error("Error creating product");
     }
 };
 
 // Update a product by ID
 export const updateProduct = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+    id: string,
+    productName: string,
+    productPrice: number
+): Promise<IProduct | null> => {
     try {
-        const { id } = req.params;
-        const { productName, productPrice } = req.body;
-        const updatedProduct = await Product.findByIdAndUpdate(
+        return await Product.findByIdAndUpdate(
             id,
             { productName, productPrice },
             { new: true }
         );
-        if (!updatedProduct) {
-            res.status(404).json({ message: "Product not found" });
-            return;
-        }
-        res.status(200).json(updatedProduct);
     } catch (error) {
-        res.status(500).json({ message: "Error updating product", error });
+        throw new Error("Error updating product");
     }
 };
 
 // Delete a product by ID
-export const deleteProduct = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const deleteProduct = async (id: string): Promise<boolean> => {
     try {
-        const { id } = req.params;
         const deletedProduct = await Product.findByIdAndDelete(id);
-        if (!deletedProduct) {
-            res.status(404).json({ message: "Product not found" });
-            return;
-        }
-        res.status(200).json({ message: "Product deleted successfully" });
+        return !!deletedProduct;
     } catch (error) {
-        res.status(500).json({ message: "Error deleting product", error });
+        throw new Error("Error deleting product");
+    }
+};
+
+export const getProductsByCustomerId = async (
+    customerId: string
+): Promise<IProduct[]> => {
+    try {
+        return await Product.find({ customerId });
+    } catch (error) {
+        throw new Error("Error fetching products by customerId");
     }
 };
